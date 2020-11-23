@@ -1,0 +1,72 @@
+{
+  "name": "@coderbyheart/smartvan-aws",
+  "version": "0.0.0-development",
+  "description": "AWS resources for SmartVan",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "check-node-version --package"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/coderbyheart/smartvan-aws.git"
+  },
+  "keywords": [
+    "Campervan",
+    "IoT",
+    "AWS",
+    "serverless"
+  ],
+  "author": "Markus Tacker | https://coderbyheart.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/coderbyheart/smartvan-aws/issues"
+  },
+  "homepage": "https://github.com/coderbyheart/smartvan-aws#readme",
+  "dependencies": {
+    "check-node-version": "^4.0.3"
+  },
+  "devDependencies": {
+    "@aws-cdk/aws-cognito": "1.74.0",
+    "@aws-cdk/aws-iam": "1.74.0",
+    "@aws-cdk/aws-iot": "1.74.0",
+    "@aws-cdk/aws-s3": "1.74.0",
+    "@aws-cdk/core": "1.74.0",
+    "@bifravst/cloudformation-helpers": "4.0.10",
+    "@bifravst/code-style": "8.0.134",
+    "@bifravst/eslint-config-typescript": "5.0.78",
+    "@bifravst/package-layered-lambdas": "3.13.30",
+    "@commitlint/cli": "11.0.0",
+    "@commitlint/config-angular": "11.0.0",
+    "@types/aws-lambda": "8.10.64",
+    "@types/cfn-response": "1.0.4",
+    "@types/chalk": "2.2.0",
+    "@types/node": "14.14.9",
+    "@types/uuid": "8.3.0",
+    "cdk": "1.74.0",
+    "eslint": "7.14.0",
+    "husky": "4.3.0",
+    "lint-staged": "10.5.1",
+    "prettier": "2.2.0",
+    "typescript": "4.1.2"
+  },
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
+      "pre-commit": "lint-staged && npx tsc"
+    }
+  },
+  "lint-staged": {
+    "*.{md,json,yaml,yml}": [
+      "prettier --write"
+    ],
+    "*.{ts,tsx}": [
+      "prettier --write",
+      "eslint --ext .js,.ts"
+    ]
+  }
+}
