@@ -16,6 +16,7 @@ Make these environment variable available:
 > ℹ️ Linux users can use [direnv](https://direnv.net/) to simplify the process.
 
     export AWS_REGION=<...>
+    export AWS_DEFAULT_REGION=<...>
     export AWS_ACCESS_KEY_ID=<Access Key ID of the service account>
     export AWS_SECRET_ACCESS_KEY=<Secret Access Key of the service account>
 
@@ -39,3 +40,7 @@ Deploy the server stack to an AWS account
 
 Create a Thing and assign it to the `smartvan` group.
 
+    aws iot create-thing --thing-name smartvan
+    aws iot add-thing-to-thing-group  --thing-group-name smartvan --thing-name smartvan
+    aws iot create-keys-and-certificate --set-as-active
+    aws iot attach-thing-principal --thing-name smartvan --principal <certificateArn>
