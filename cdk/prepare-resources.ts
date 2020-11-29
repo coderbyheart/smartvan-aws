@@ -16,6 +16,10 @@ export type CDKLambdas = {
 	createThingGroup: string
 }
 
+export type SmartVanLambdas = {
+	storeMessagesInTimestream: string
+}
+
 export const prepareResources = async ({
 	region,
 	rootDir,
@@ -129,6 +133,43 @@ export const prepareCDKLambdas = async ({
 					'cdk',
 					'lambda',
 					'createThingGroup.ts',
+				),
+			},
+			tsConfig: path.resolve(rootDir, 'tsconfig.json'),
+		}),
+	}
+}
+
+export const prepareSmartVanLambdas = async ({
+	rootDir,
+	outDir,
+	sourceCodeBucketName,
+}: {
+	rootDir: string
+	outDir: string
+	sourceCodeBucketName: string
+}): Promise<PackedLambdas<SmartVanLambdas>> => {
+	const reporter = ConsoleProgressReporter('SmartVan Lambdas')
+	return {
+		layerZipFileName: await packBaseLayer({
+			reporter,
+			srcDir: rootDir,
+			outDir,
+			Bucket: sourceCodeBucketName,
+		}),
+		lambdas: await packLayeredLambdas<SmartVanLambdas>({
+			reporter,
+			id: 'bifravst',
+			mode: WebpackMode.production,
+			srcDir: rootDir,
+			outDir,
+			Bucket: sourceCodeBucketName,
+			lambdas: {
+				storeMessagesInTimestream: path.resolve(
+					rootDir,
+					'cdk',
+					'lambda',
+					'storeMessagesInTimestream.ts',
 				),
 			},
 			tsConfig: path.resolve(rootDir, 'tsconfig.json'),

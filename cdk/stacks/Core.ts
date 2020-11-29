@@ -8,7 +8,7 @@ import { ThingGroupLambda } from '../resources/ThingGroupLambda'
 import { ThingGroup } from '../resources/ThingGroup'
 import { CORE_STACK_NAME } from './stackName'
 import { lambdasOnS3 } from '../resources/lambdasOnS3'
-import { StoreSensorDataAsCloudWatchMetrics } from '../resources/StoreSensorDataAsCloudWatchMetrics'
+import { StoreSensorDataInTimestream } from '../resources/StoreSensorDataInTimestream'
 
 export class SmartVanStack extends CloudFormation.Stack {
 	public constructor(
@@ -145,6 +145,6 @@ export class SmartVanStack extends CloudFormation.Stack {
 			exportName: `${this.stackName}:thingGroupName`,
 		})
 
-		new StoreSensorDataAsCloudWatchMetrics(this, 'storeSensorDataInCloudWatch')
+		new StoreSensorDataInTimestream(this, 'storeSensorDataInCloudWatch')
 	}
 }
