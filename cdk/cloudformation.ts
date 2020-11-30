@@ -1,5 +1,9 @@
 import { SmartVanApp } from './apps/Core'
-import { prepareResources, prepareCDKLambdas } from './prepare-resources'
+import {
+	prepareResources,
+	prepareCDKLambdas,
+	prepareSmartVanLambdas,
+} from './prepare-resources'
 
 const rootDir = process.cwd()
 
@@ -10,6 +14,10 @@ Promise.all([
 	}).then(async (res) => ({
 		...res,
 		packedCDKLambdas: await prepareCDKLambdas({
+			...res,
+			rootDir,
+		}),
+		packedSmartVanLambdas: await prepareSmartVanLambdas({
 			...res,
 			rootDir,
 		}),

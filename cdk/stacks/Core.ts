@@ -3,7 +3,11 @@ import * as Lambda from '@aws-cdk/aws-lambda'
 import * as IAM from '@aws-cdk/aws-iam'
 import * as S3 from '@aws-cdk/aws-s3'
 import * as Iot from '@aws-cdk/aws-iot'
-import { CDKLambdas, PackedLambdas } from '../prepare-resources'
+import {
+	CDKLambdas,
+	PackedLambdas,
+	SmartVanLambdas,
+} from '../prepare-resources'
 import { ThingGroupLambda } from '../resources/ThingGroupLambda'
 import { ThingGroup } from '../resources/ThingGroup'
 import { CORE_STACK_NAME } from './stackName'
@@ -17,10 +21,12 @@ export class SmartVanStack extends CloudFormation.Stack {
 			mqttEndpoint,
 			sourceCodeBucketName,
 			packedCDKLambdas,
+			packedSmartVanLambdas,
 		}: {
 			mqttEndpoint: string
 			sourceCodeBucketName: string
 			packedCDKLambdas: PackedLambdas<CDKLambdas>
+			packedSmartVanLambdas: PackedLambdas<SmartVanLambdas>
 		},
 	) {
 		super(parent, CORE_STACK_NAME)
@@ -145,6 +151,25 @@ export class SmartVanStack extends CloudFormation.Stack {
 			exportName: `${this.stackName}:thingGroupName`,
 		})
 
-		new StoreSensorDataInTimestream(this, 'storeSensorDataInCloudWatch')
+		const smartVanLayer = new Lambda.LayerVersion(
+			this,
+			`${CORE_STACK_NAME}-smartvan-layer`,
+			{
+				code: Lambda.Code.fromBucket(
+					sourceCodeBucket,
+					packedSmartVanLambdas.layerZipFileName,
+				),
+				compatibleRuntimes: [Lambda.Runtime.NODEJS_12_X],
+			},
+		)
+
+		const smartVanLambdas = {
+			lambdas: lambasOnBucket(packedSmartVanLambdas),
+			layers: [smartVanLayer],
+		}
+
+		new StoreSensorDataInTimestream(this, 'storeSensorDataInCloudWatch', {
+			smartVanLambdas: smartVanLambdas,
+		})
 	}
 }

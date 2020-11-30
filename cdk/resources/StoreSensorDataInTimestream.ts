@@ -4,6 +4,8 @@ import * as IAM from '@aws-cdk/aws-iam'
 import * as Timestream from '@aws-cdk/aws-timestream'
 import * as Lambda from '@aws-cdk/aws-lambda'
 import { LambdaLogGroup } from './LambdaLogGroup'
+import { SmartVanLambdas } from '../prepare-resources'
+import { LambdasWithLayer } from './LambdasWithLayer'
 
 /**
  * This stores the sensor data in Timestream they can be visualized
@@ -14,12 +16,9 @@ export class StoreSensorDataInTimestream extends CloudFormation.Resource {
 		parent: CloudFormation.Stack,
 		id: string,
 		{
-			lambdas,
+			smartVanLambdas,
 		}: {
-			lambdas: {
-				storeMessagesInTimestream: Lambda.S3Code
-				layers: Lambda.ILayerVersion[]
-			}
+			smartVanLambdas: LambdasWithLayer<SmartVanLambdas>
 		},
 	) {
 		super(parent, id)
@@ -52,12 +51,12 @@ export class StoreSensorDataInTimestream extends CloudFormation.Resource {
 		// FIXME: CloudFormation currently does not support IoT actions for timestream, once it does (https://github.com/aws-cloudformation/aws-cloudformation-coverage-roadmap/issues/663) remove the lambda handling the message insert.
 
 		const storeMessagesInTimestream = new Lambda.Function(this, 'lambda', {
-			layers: lambdas.layers,
+			layers: smartVanLambdas.layers,
 			handler: 'index.handler',
 			runtime: Lambda.Runtime.NODEJS_12_X,
 			timeout: CloudFormation.Duration.seconds(60),
 			memorySize: 1792,
-			code: lambdas.storeMessagesInTimestream,
+			code: smartVanLambdas.lambdas.storeMessagesInTimestream,
 			description:
 				'Processes devices messages and updates and stores them in Timestream',
 			initialPolicy: [
@@ -85,7 +84,7 @@ export class StoreSensorDataInTimestream extends CloudFormation.Resource {
 
 		new LambdaLogGroup(this, 'lambdaLogGroup', storeMessagesInTimestream)
 
-		new IoT.CfnTopicRule(this, `IotRule`, {
+		const storeUpdatesRule = new IoT.CfnTopicRule(this, `IotRule`, {
 			topicRulePayload: {
 				awsIotSqlVersion: '2016-03-23',
 				description: `stores the sensor data in Timestream so they can be visualized on a dashboard`,
@@ -105,6 +104,11 @@ export class StoreSensorDataInTimestream extends CloudFormation.Resource {
 					},
 				},
 			},
+		})
+
+		storeMessagesInTimestream.addPermission('storeUpdatesRule', {
+			principal: new IAM.ServicePrincipal('iot.amazonaws.com'),
+			sourceArn: storeUpdatesRule.attrArn,
 		})
 	}
 }

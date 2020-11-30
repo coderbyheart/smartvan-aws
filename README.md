@@ -40,7 +40,8 @@ Deploy the server stack to an AWS account
 
 Create a Thing and assign it to the `smartvan` group.
 
+    mkdir certificates
     aws iot create-thing --thing-name smartvan
     aws iot add-thing-to-thing-group  --thing-group-name smartvan --thing-name smartvan
-    aws iot create-keys-and-certificate --set-as-active
-    aws iot attach-thing-principal --thing-name smartvan --principal <certificateArn>
+    aws iot create-keys-and-certificate --set-as-active > certificates/smartvan.json
+    aws iot attach-thing-principal --thing-name smartvan --principal `cat certificates/smartvan.json | jq -r ".certificateArn"`

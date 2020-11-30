@@ -24,7 +24,8 @@
   },
   "homepage": "https://github.com/coderbyheart/smartvan-aws#readme",
   "dependencies": {
-    "check-node-version": "^4.0.3"
+    "check-node-version": "4.0.3",
+    "uuid": "8.3.1"
   },
   "devDependencies": {
     "@aws-cdk/aws-cognito": "1.75.0",
@@ -35,8 +36,8 @@
     "@aws-cdk/core": "1.75.0",
     "@bifravst/cloudformation-helpers": "4.0.14",
     "@bifravst/code-style": "8.0.134",
-    "@bifravst/eslint-config-typescript": "5.0.78",
-    "@bifravst/package-layered-lambdas": "3.13.36",
+    "@bifravst/eslint-config-typescript": "5.0.79",
+    "@bifravst/package-layered-lambdas": "3.13.38",
     "@commitlint/cli": "11.0.0",
     "@commitlint/config-angular": "11.0.0",
     "@types/aws-lambda": "8.10.64",

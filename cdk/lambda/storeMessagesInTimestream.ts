@@ -1,53 +1,51 @@
 import { TimestreamWrite } from 'aws-sdk'
-import { fromEnv } from '../util/fromEnv'
-import { batchToTimestreamRecords } from './batchToTimestreamRecords'
-import { messageToTimestreamRecords } from './messageToTimestreamRecords'
-import { shadowUpdateToTimestreamRecords } from './shadowUpdateToTimestreamRecords'
-import { storeRecordsInTimeseries } from './storeRecordsInTimeseries'
+import { v4 } from 'uuid'
 
-const { tableInfo } = fromEnv({
-	tableInfo: 'TABLE_INFO',
-})(process.env)
+const [DatabaseName, TableName] = process.env.TABLE_INFO?.split('|') ?? ['', '']
 
-const [DatabaseName, TableName] = tableInfo.split('|')
-
-const store = storeRecordsInTimeseries({
-	timestream: new TimestreamWrite(),
-	DatabaseName,
-	TableName,
-})
-const storeUpdate = async (Records: TimestreamWrite.Records) => {
-	console.log({ DatabaseName, TableName, Records })
-	return store(Records)
-}
+const timestream = new TimestreamWrite()
 
 /**
  * Processes device messages and updates and stores the in Timestream
  */
-export const handler = async (
-	event: UpdatedDeviceState | DeviceMessage | BatchMessage,
-): Promise<void> => {
+export const handler = async (event: {
+	reported: Record<string, any>
+	timestamp: number
+	deviceId: string
+}): Promise<void> => {
 	console.log(JSON.stringify(event))
 
+	const { deviceId, reported, timestamp } = event
+
 	try {
-		if ('reported' in event) {
-			await storeUpdate(shadowUpdateToTimestreamRecords(event))
-			return
+		const w = {
+			CommonAttributes: {
+				Dimensions: [
+					{
+						Name: 'deviceId',
+						Value: deviceId,
+					},
+					{
+						Name: 'measureGroup',
+						Value: v4(),
+					},
+				],
+			},
+			DatabaseName,
+			TableName,
+			Records: Object.entries(reported)
+				.filter(([k]) =>
+					['inside', 'inside_rssi', 'outside', 'outside_rssi'].includes(k),
+				)
+				.map(([MeasureName, v]) => ({
+					MeasureName,
+					MeasureValue: `${v}`,
+					MeasureValueType: 'DOUBLE',
+					Time: `${timestamp}`,
+				})),
 		}
-		if ('message' in event) {
-			await storeUpdate(messageToTimestreamRecords(event))
-			return
-		}
-		if ('batch' in event) {
-			await storeUpdate(batchToTimestreamRecords(event))
-			return
-		}
-		console.error(
-			JSON.stringify({
-				error: 'Unknown event',
-				event,
-			}),
-		)
+		console.log(JSON.stringify(w))
+		await timestream.writeRecords(w).promise()
 	} catch (err) {
 		console.error(err)
 		console.error(
