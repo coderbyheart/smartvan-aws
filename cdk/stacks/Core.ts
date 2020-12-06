@@ -13,6 +13,7 @@ import { ThingGroup } from '../resources/ThingGroup'
 import { CORE_STACK_NAME } from './stackName'
 import { lambdasOnS3 } from '../resources/lambdasOnS3'
 import { StoreSensorDataInTimestream } from '../resources/StoreSensorDataInTimestream'
+import { Webapp } from '../resources/Webapp'
 
 export class SmartVanStack extends CloudFormation.Stack {
 	public constructor(
@@ -168,8 +169,49 @@ export class SmartVanStack extends CloudFormation.Stack {
 			layers: [smartVanLayer],
 		}
 
-		new StoreSensorDataInTimestream(this, 'storeSensorDataInCloudWatch', {
-			smartVanLambdas: smartVanLambdas,
+		const history = new StoreSensorDataInTimestream(
+			this,
+			'storeSensorDataInCloudWatch',
+			{
+				smartVanLambdas: smartVanLambdas,
+			},
+		)
+
+		new CloudFormation.CfnOutput(this, 'historyTableInfo', {
+			value: history.table.ref,
+			exportName: `${this.stackName}:historyTableInfo`,
+		})
+
+		const webapp = new Webapp(this, 'webapp')
+
+		new CloudFormation.CfnOutput(this, 'userPoolId', {
+			value: webapp.userPool.userPoolId,
+			exportName: `${this.stackName}:userPoolId`,
+		})
+
+		new CloudFormation.CfnOutput(this, 'identityPoolId', {
+			value: webapp.identityPool.ref,
+			exportName: `${this.stackName}:identityPoolId`,
+		})
+
+		new CloudFormation.CfnOutput(this, 'userPoolClientId', {
+			value: webapp.userPoolClient.userPoolClientId,
+			exportName: `${this.stackName}:userPoolClientId`,
+		})
+
+		new CloudFormation.CfnOutput(this, 'webAppBucketName', {
+			value: webapp.bucket.bucketName,
+			exportName: `${this.stackName}:webAppBucketName`,
+		})
+
+		new CloudFormation.CfnOutput(this, 'cloudfrontDistributionIdWebApp', {
+			value: webapp.distribution.ref,
+			exportName: `${this.stackName}:cloudfrontDistributionIdWebApp`,
+		})
+
+		new CloudFormation.CfnOutput(this, 'webAppDomainName', {
+			value: webapp.distribution.attrDomainName,
+			exportName: `${this.stackName}:webAppDomainName`,
 		})
 	}
 }

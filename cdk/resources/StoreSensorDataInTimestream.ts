@@ -12,6 +12,7 @@ import { LambdasWithLayer } from './LambdasWithLayer'
  * on a dashboard.
  */
 export class StoreSensorDataInTimestream extends CloudFormation.Resource {
+	public readonly table: Timestream.CfnTable
 	public constructor(
 		parent: CloudFormation.Stack,
 		id: string,
@@ -24,7 +25,7 @@ export class StoreSensorDataInTimestream extends CloudFormation.Resource {
 		super(parent, id)
 
 		const db = new Timestream.CfnDatabase(this, 'db')
-		const table = new Timestream.CfnTable(this, 'table', {
+		this.table = new Timestream.CfnTable(this, 'table', {
 			databaseName: db.ref,
 			retentionProperties: {
 				MemoryStoreRetentionPeriodInHours: '24',
@@ -70,7 +71,7 @@ export class StoreSensorDataInTimestream extends CloudFormation.Resource {
 				}),
 				new IAM.PolicyStatement({
 					actions: ['timestream:WriteRecords'],
-					resources: [table.attrArn],
+					resources: [this.table.attrArn],
 				}),
 				new IAM.PolicyStatement({
 					actions: ['timestream:DescribeEndpoints'],
@@ -78,7 +79,7 @@ export class StoreSensorDataInTimestream extends CloudFormation.Resource {
 				}),
 			],
 			environment: {
-				TABLE_INFO: table.ref,
+				TABLE_INFO: this.table.ref,
 			},
 		})
 
