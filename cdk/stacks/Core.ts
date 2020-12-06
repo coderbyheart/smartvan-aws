@@ -182,7 +182,7 @@ export class SmartVanStack extends CloudFormation.Stack {
 			exportName: `${this.stackName}:historyTableInfo`,
 		})
 
-		const webapp = new Webapp(this, 'webapp')
+		const webapp = new Webapp(this, 'webapp', { history })
 
 		new CloudFormation.CfnOutput(this, 'userPoolId', {
 			value: webapp.userPool.userPoolId,

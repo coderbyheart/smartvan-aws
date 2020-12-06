@@ -3,6 +3,7 @@ import * as Cognito from '@aws-cdk/aws-cognito'
 import * as IAM from '@aws-cdk/aws-iam'
 import * as CloudFront from '@aws-cdk/aws-cloudfront'
 import * as S3 from '@aws-cdk/aws-s3'
+import { StoreSensorDataInTimestream } from './StoreSensorDataInTimestream'
 
 /**
  * Provides the resources for the SmartVan web app
@@ -14,7 +15,11 @@ export class Webapp extends CloudFormation.Resource {
 	public readonly bucket: S3.IBucket
 	public readonly distribution: CloudFront.CfnDistribution
 
-	public constructor(parent: CloudFormation.Construct, id: string) {
+	public constructor(
+		parent: CloudFormation.Construct,
+		id: string,
+		{ history }: { history: StoreSensorDataInTimestream },
+	) {
 		super(parent, id)
 
 		this.userPool = new Cognito.UserPool(this, 'userPool', {
@@ -65,7 +70,28 @@ export class Webapp extends CloudFormation.Resource {
 				},
 				'sts:AssumeRoleWithWebIdentity',
 			),
-			inlinePolicies: {},
+			inlinePolicies: {
+				timestreamQuery: new IAM.PolicyDocument({
+					statements: [
+						new IAM.PolicyStatement({
+							resources: [history.table.attrArn],
+							actions: [
+								'timestream:Select',
+								'timestream:DescribeTable',
+								'timestream:ListMeasures',
+							],
+						}),
+						new IAM.PolicyStatement({
+							resources: ['*'],
+							actions: [
+								'timestream:DescribeEndpoints',
+								'timestream:SelectValues',
+								'timestream:CancelQuery',
+							],
+						}),
+					],
+				}),
+			},
 		})
 
 		const unauthenticatedUserRole = new IAM.Role(
