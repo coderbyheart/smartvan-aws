@@ -198,20 +198,5 @@ export class SmartVanStack extends CloudFormation.Stack {
 			value: webapp.userPoolClient.userPoolClientId,
 			exportName: `${this.stackName}:userPoolClientId`,
 		})
-
-		new CloudFormation.CfnOutput(this, 'webAppBucketName', {
-			value: webapp.bucket.bucketName,
-			exportName: `${this.stackName}:webAppBucketName`,
-		})
-
-		new CloudFormation.CfnOutput(this, 'cloudfrontDistributionIdWebApp', {
-			value: webapp.distribution.ref,
-			exportName: `${this.stackName}:cloudfrontDistributionIdWebApp`,
-		})
-
-		new CloudFormation.CfnOutput(this, 'webAppDomainName', {
-			value: webapp.distribution.attrDomainName,
-			exportName: `${this.stackName}:webAppDomainName`,
-		})
 	}
 }

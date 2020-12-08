@@ -1,8 +1,6 @@
 import * as CloudFormation from '@aws-cdk/core'
 import * as Cognito from '@aws-cdk/aws-cognito'
 import * as IAM from '@aws-cdk/aws-iam'
-import * as CloudFront from '@aws-cdk/aws-cloudfront'
-import * as S3 from '@aws-cdk/aws-s3'
 import { StoreSensorDataInTimestream } from './StoreSensorDataInTimestream'
 
 /**
@@ -12,8 +10,6 @@ export class Webapp extends CloudFormation.Resource {
 	public readonly userPool: Cognito.IUserPool
 	public readonly userPoolClient: Cognito.IUserPoolClient
 	public readonly identityPool: Cognito.CfnIdentityPool
-	public readonly bucket: S3.IBucket
-	public readonly distribution: CloudFront.CfnDistribution
 
 	public constructor(
 		parent: CloudFormation.Construct,
@@ -120,62 +116,5 @@ export class Webapp extends CloudFormation.Resource {
 				unauthenticated: unauthenticatedUserRole.roleArn,
 			},
 		})
-
-		this.bucket = new S3.Bucket(this, 'bucket', {
-			publicReadAccess: true,
-			cors: [
-				{
-					allowedHeaders: ['*'],
-					allowedMethods: [S3.HttpMethods.GET],
-					allowedOrigins: ['*'],
-					exposedHeaders: ['Date'],
-					maxAge: 3600,
-				},
-			],
-			removalPolicy: CloudFormation.RemovalPolicy.DESTROY,
-			websiteIndexDocument: 'index.html',
-			websiteErrorDocument: 'index.html',
-		})
-
-		this.distribution = new CloudFront.CfnDistribution(
-			this,
-			'websiteDistribution',
-			{
-				distributionConfig: {
-					enabled: true,
-					priceClass: 'PriceClass_100',
-					defaultRootObject: 'index.html',
-					defaultCacheBehavior: {
-						allowedMethods: ['HEAD', 'GET', 'OPTIONS'],
-						cachedMethods: ['HEAD', 'GET'],
-						compress: true,
-						forwardedValues: {
-							queryString: true,
-							headers: [
-								'Access-Control-Request-Headers',
-								'Access-Control-Request-Method',
-								'Origin',
-							],
-						},
-						smoothStreaming: false,
-						targetOriginId: 'S3',
-						viewerProtocolPolicy: 'redirect-to-https',
-					},
-					ipv6Enabled: true,
-					viewerCertificate: {
-						cloudFrontDefaultCertificate: true,
-					},
-					origins: [
-						{
-							domainName: `${this.bucket.bucketName}.s3-website.${this.stack.region}.amazonaws.com`,
-							id: 'S3',
-							customOriginConfig: {
-								originProtocolPolicy: 'http-only',
-							},
-						},
-					],
-				},
-			},
-		)
 	}
 }
