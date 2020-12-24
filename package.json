@@ -4,8 +4,7 @@
   "description": "AWS resources for SmartVan",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "check-node-version --package"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
@@ -27,7 +26,6 @@
     "@aws-sdk/client-cloudformation": "^3.1.0",
     "@aws-sdk/client-iot": "^3.1.0",
     "@aws-sdk/client-timestream-write": "^3.1.0",
-    "check-node-version": "4.0.3",
     "uuid": "8.3.2"
   },
   "devDependencies": {
