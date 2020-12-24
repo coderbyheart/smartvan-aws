@@ -90,7 +90,7 @@ export class StoreSensorDataInTimestream extends CloudFormation.Resource {
 				awsIotSqlVersion: '2016-03-23',
 				description: `stores the sensor data in Timestream so they can be visualized on a dashboard`,
 				ruleDisabled: false,
-				sql: `SELECT state.reported AS reported, timestamp() as timestamp, clientid() as deviceId FROM '$aws/things/+/shadow/update/accepted'`,
+				sql: `SELECT state.reported AS reported, timestamp() as timestamp, topic(3) as deviceId FROM '$aws/things/+/shadow/update/accepted'`,
 				actions: [
 					{
 						lambda: {
