@@ -1,9 +1,12 @@
-import { TimestreamWrite } from 'aws-sdk'
+import {
+	TimestreamWriteClient,
+	WriteRecordsCommand,
+} from '@aws-sdk/client-timestream-write'
 import { v4 } from 'uuid'
 
 const [DatabaseName, TableName] = process.env.TABLE_INFO?.split('|') ?? ['', '']
 
-const timestream = new TimestreamWrite()
+const timestream = new TimestreamWriteClient({})
 
 /**
  * Processes device messages and updates and stores the in Timestream
@@ -45,7 +48,7 @@ export const handler = async (event: {
 				})),
 		}
 		console.log(JSON.stringify(w))
-		await timestream.writeRecords(w).promise()
+		await timestream.send(new WriteRecordsCommand(w))
 	} catch (err) {
 		console.error(err)
 		console.error(
