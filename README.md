@@ -24,6 +24,10 @@ Install dependencies
 
     npm ci
 
+Compile the source
+
+    npx tsc
+
 Set the ID of the stack
 
     export STACK_NAME="${STACK_NAME:-smartvan}"
